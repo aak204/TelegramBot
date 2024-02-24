@@ -38,7 +38,7 @@ public class NotificationBot extends TelegramLongPollingBot {
                     for (int i = 0; i < 100; i++) {
                         SendMessage message = new SendMessage();
                         message.setChatId(String.valueOf(id));
-                        message.setText("Уведомление отправлено #" + (i + 1));
+                        message.setText(String.format("Уведомление отправлено %s", i + 1));
                         distributor.queueMessage(id, message);
                     }
                 });

@@ -26,8 +26,9 @@ public class MessageDistributor {
                 if (msg != null) {
                     try {
                         bot.executeAsync(msg);
-                    } catch (Exception e) {
-                        logger.severe("Исключение при отправке сообщения пользователю: " + userId + ", ошибка: " + e.getMessage());
+                    } catch (Exception TelegramMessageException) {
+                        logger.severe(String.format("Исключение при отправке сообщения пользователю: %s, ошибка: %s",
+                                userId, TelegramMessageException.getMessage()));
                     }
                 }
             }, 0, 50, TimeUnit.MILLISECONDS);
