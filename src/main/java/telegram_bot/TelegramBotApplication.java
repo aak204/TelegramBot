@@ -1,4 +1,4 @@
-package telegram.bot.TelegramBot;
+package telegram_bot;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;

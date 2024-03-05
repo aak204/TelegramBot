@@ -1,4 +1,4 @@
-package telegram.bot.TelegramBot;
+package telegram_bot;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
