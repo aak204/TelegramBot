@@ -1,4 +1,4 @@
-package telegram_bot;
+package telegram_bot.sender;
 
 import com.rabbitmq.client.Channel;
 import org.springframework.beans.factory.annotation.Autowired;

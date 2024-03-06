@@ -1,4 +1,4 @@
-package telegram_bot;
+package telegram_bot.config;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -7,6 +7,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
+import telegram_bot.bot.NotificationBot;
 
 @SpringBootApplication
 public class TelegramBotApplication {

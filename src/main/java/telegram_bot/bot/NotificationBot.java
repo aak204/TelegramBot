@@ -1,4 +1,4 @@
-package telegram_bot;
+package telegram_bot.bot;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import telegram_bot.messaging.MessageEvent;
 
 @Component
 public class NotificationBot extends TelegramLongPollingBot {

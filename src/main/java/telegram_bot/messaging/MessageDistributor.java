@@ -1,4 +1,4 @@
-package telegram_bot;
+package telegram_bot.messaging;
 
 import com.rabbitmq.client.*;
 import jakarta.annotation.PostConstruct;
@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import telegram_bot.sender.TelegramMessageSender;
+
 import java.io.IOException;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
