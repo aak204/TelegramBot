@@ -1,33 +1,57 @@
 package telegram_bot;
 
 import com.rabbitmq.client.*;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import java.io.IOException;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
 import static java.nio.charset.StandardCharsets.UTF_8;
-
+@Component
 public class MessageDistributor {
+    private final TelegramMessageSender messageSender;
     private static final String QUEUE_NAME = "telegram_messages";
-    private final TelegramLongPollingBot bot;
     private static final Logger logger = Logger.getLogger(MessageDistributor.class.getName());
     private Connection connection;
     private Channel channel;
-    private final ScheduledExecutorService executorService;
+    private ScheduledExecutorService executorService;
 
-    public MessageDistributor(final TelegramLongPollingBot bot) {
-        this.bot = bot;
-        this.executorService = Executors.newScheduledThreadPool(2);
+    @Value("${rabbitmq.host}")
+    private String rabbitMqHost;
+
+    @Value("${rabbitmq.username}")
+    private String rabbitMqUsername;
+
+    @Value("${rabbitmq.password}")
+    private String rabbitMqPassword;
+
+    @Value("${executor.thread-pool-size}")
+    private int threadPoolSize;
+
+    public MessageDistributor(TelegramMessageSender messageSender) {
+        this.messageSender = messageSender;
+    }
+
+    @PostConstruct
+    public void initialize() {
+        this.executorService = Executors.newScheduledThreadPool(threadPoolSize);
         setupRabbitMQ();
         recoverMessages();
     }
 
+    @EventListener
+    public void onMessageEvent(MessageEvent event) {
+        queueMessage(event.userId(), event.message());
+    }
+
     private void setupRabbitMQ() {
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("localhost");
-        factory.setUsername("guest");
-        factory.setPassword("guest");
+        factory.setHost(rabbitMqHost);
+        factory.setUsername(rabbitMqUsername);
+        factory.setPassword(rabbitMqPassword);
         try {
             connection = factory.newConnection();
             channel = connection.createChannel();
@@ -65,8 +89,8 @@ public class MessageDistributor {
 
                 // Планируем отправку сообщения с задержкой в 50 мс
                 executorService.schedule(() ->
-                                sendTelegramMessage(userId, message, delivery.getEnvelope().getDeliveryTag()),
-                        60, TimeUnit.MILLISECONDS);
+                                messageSender.sendTelegramMessage(userId, message, delivery.getEnvelope().getDeliveryTag(), channel),
+                        50, TimeUnit.MILLISECONDS);
             }
         };
         try {
@@ -74,23 +98,6 @@ public class MessageDistributor {
             channel.basicConsume(QUEUE_NAME, false, deliverCallback, consumerTag -> {});
         } catch (IOException recoveryError) {
             logger.severe(String.format("Ошибка при восстановлении сообщений из RabbitMQ: %s", recoveryError.getMessage()));
-        }
-    }
-
-    private void sendTelegramMessage(final Long userId, final SendMessage message, final long deliveryTag) {
-        try {
-            bot.executeAsync(message).thenAccept(msg -> {
-                try {
-                    channel.basicAck(deliveryTag, false); // Подтверждаем после успешной отправки
-                } catch (IOException usageError) {
-                    logger.severe(String.format("Ошибка при подтверждении сообщения для пользователя: %d, ошибка: %s", userId, usageError.getMessage()));
-                }
-            }).exceptionally(sendingError -> {
-                logger.severe(String.format("Исключение при отправке сообщения пользователю: %d, ошибка: %s", userId, sendingError.getMessage()));
-                return null;
-            });
-        } catch (Exception error) {
-            logger.severe(String.format("Исключение при отправке сообщения пользователю: %d, ошибка: %s", userId, error.getMessage()));
         }
     }
 }

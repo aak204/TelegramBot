@@ -1,0 +1,10 @@
+rabbitmq:
+  host: localhost
+  username: guest
+  password: guest
+executor:
+  thread-pool-size: 2
+telegram:
+  bot:
+    username: Test190NotificationsBot
+    token: 6833871789:AAE5jqbLTlEAiPlPJAtYS8yvVR9OEsOEcMQ
